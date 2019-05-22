@@ -11,6 +11,8 @@ const jQuery = require("jquery");
 // lodash: Load the full build
 // utility app for JavaScript that makes it easier to work within node apps
 const _ = require('lodash');
+// require mongoose
+const mongoose = require("mongoose");
 
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
 const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
@@ -27,6 +29,31 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // our static files are inside the public folder
 app.use(express.static("public"));
+
+// Use MongoDB and mongoose
+// open a connection to locally running instance of our mongoDB via an url
+// see the mongoose quickstart guide: https://mongoosejs.com/docs/index.html
+mongoose.connect('mongodb://localhost:27017/blogDB', {useNewUrlParser: true});
+
+// Define a new mongoose schema for the blog posts
+// a schema maps to a MongoDB collection and defines the shape of the documents in that collection
+const postsSchema {
+  title: String,
+  body: String
+};
+
+// Create a model
+// In order to use the postSchema, we need to convert it into a model we can work with like so:
+const Post = mongoose.model("Post", postsSchema);
+// the model takes two arguments: 1) singular version of the collection name, 2) schema used to create the collection
+// See mongoose docs on models: https://mongoosejs.com/docs/models.html
+
+// Create documents, i.e. instances of the above Post model
+const firstEntry = new Post ({
+  title: "Welcome to my blog!",
+  body: "Hi there. Great to see you stumbled across my blog. I am a self-taught web developer and designer and started this blog to document my coding journey."
+});
+
 
 // global array called 'posts' that stores all new individual posts
 let posts = [];
