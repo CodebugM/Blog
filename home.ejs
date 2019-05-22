@@ -1,0 +1,36 @@
+<%# In EJS, layouts can be implements by including headers and footers like so %>
+<%# If the header/footer file is inside a folder, update the code inside the string to: ./foldername/filename %>
+<%- include("./partials/header") %>
+
+
+
+
+
+<h1>Home</h1>
+
+<p> <%= contentHome %> </p>
+
+<% newPosts.forEach(function(post){ %>
+
+  <script type="text/javascript">
+    let url = "/posts/" + post.newPostRoute;
+  </script>
+
+  <h1>
+<%=  post.newPostTitle %>
+  </h1>
+  <p>
+    <%# On the homepage only display the first 100 characters of a blog post %>
+    <%# both .slice(0,100) and .substring(0,100) work %>
+    <%=  post.newPostContent.slice(0,100) + "..." %>
+    <a id="readMore" href="/posts/<%=post.newPostTitle%>" class="more">Read More</a>
+  </p>
+
+<% }); %>
+
+
+
+
+
+
+  <%- include("./partials/footer") %>

@@ -1,0 +1,13 @@
+<%# In EJS, layouts can be implements by including headers and footers like so %>
+<%# If the header/footer file is inside a folder, update the code inside the string to: ./foldername/filename %>
+<%- include("./partials/header") %>
+
+  <h1>
+<%=  title %>
+  </h1>
+  <p>
+    <%=  content %>
+  </p>
+
+
+  <%- include("./partials/footer") %>

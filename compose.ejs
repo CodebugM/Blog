@@ -1,0 +1,30 @@
+<%- include("./partials/header") %>
+
+
+<h1>Compose</h1>
+
+<!-- the information inside the form is posted to the server at the /compose route -->
+<form class="post" action="/compose" method="post">
+
+  <div class="form-group">
+
+    <label>Title</label>
+    <br>
+    <input class="form-control" type="text" name="newPostTitle">
+    <br>
+    <br>
+
+    <label>Post</label>
+    <br>
+    <textarea class="form-control" type="text" name="newPostContent" rows="5">
+      </textarea>
+    <!-- <input  type="text" name="newPostContent" style="width: 460px; height: 150px"> -->
+
+  </div>
+
+  <button class="btn btn-primary" type="submit" name="compose">Publish</button>
+
+</form>
+
+
+<%- include("./partials/footer") %>
