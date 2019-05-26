@@ -33,30 +33,41 @@ app.use(express.static("public"));
 // Use MongoDB and mongoose
 // open a connection to locally running instance of our mongoDB via an url
 // see the mongoose quickstart guide: https://mongoosejs.com/docs/index.html
-mongoose.connect('mongodb://localhost:27017/blogDB', {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost:27017/blogDB", {useNewUrlParser: true});
 
 // Define a new mongoose schema for the blog posts
 // a schema maps to a MongoDB collection and defines the shape of the documents in that collection
-const postsSchema {
+const postsSchema = new mongoose.Schema ({
   title: String,
   body: String
-};
+});
 
-// Create a model
+// Compile the schema into a model / create a model
 // In order to use the postSchema, we need to convert it into a model we can work with like so:
 const Post = mongoose.model("Post", postsSchema);
 // the model takes two arguments: 1) singular version of the collection name, 2) schema used to create the collection
 // See mongoose docs on models: https://mongoosejs.com/docs/models.html
 
 // Create documents, i.e. instances of the above Post model
+// each document in this case will be a post with properties as declared in our schema
 const firstEntry = new Post ({
   title: "Welcome to my blog!",
-  body: "Hi there. Great to see you stumbled across my blog. I am a self-taught web developer and designer and started this blog to document my coding journey."
+  body: "Hi there. Great to see you stumbled across my blog. I am a self-taught web developer and designer. I started this blog to document my coding journey."
 });
-
 
 // global array called 'posts' that stores all new individual posts
 let posts = [];
+
+posts.push(firstEntry);
+
+// use the mongoose method insertMany() to save the posts array into our database
+Post.insertMany(posts, function(err){
+  if(err) {
+    console.log(err);
+  } else {
+    console.log("Successfully save items to DB.");
+  }
+});
 
 
 // *** HOME route / root route ***
@@ -67,12 +78,18 @@ app.get("/", function(req, res){
   // we are also passing in a JavaScript object, a key-value pair, inside a pair of curly braces
   // this allows for the homeStartingContent to be rendered in the paragraph in home.ejs
 
-  res.render("home", {
-    contentHome: homeStartingContent,
-    newPosts: posts
+  // Using the mongoose find() method we can log all the posts inside our posts collection
+  //    by tapping into the Post model, which represents our items collection
+  // using a set of empty curly braces we specify that we want to find all the posts in
+  //    our collection (i.e. there are no conditions)
+  Post.find({}, function(err, results){
+    res.render("home", {
+      contentHome: homeStartingContent,
+      newPosts: posts
+    });
   });
-  // console.log(posts);
 });
+
 
 // targets the about route
 app.get("/about", function(req, res){
