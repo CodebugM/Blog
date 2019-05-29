@@ -37,37 +37,17 @@ mongoose.connect("mongodb://localhost:27017/blogDB", {useNewUrlParser: true});
 
 // Define a new mongoose schema for the blog posts
 // a schema maps to a MongoDB collection and defines the shape of the documents in that collection
-const postsSchema = new mongoose.Schema ({
+const postSchema = {
   title: String,
-  body: String
-});
+  content: String
+};
 
 // Compile the schema into a model / create a model
 // In order to use the postSchema, we need to convert it into a model we can work with like so:
-const Post = mongoose.model("Post", postsSchema);
+const Post = mongoose.model("Post", postSchema);
 // the model takes two arguments: 1) singular version of the collection name, 2) schema used to create the collection
 // See mongoose docs on models: https://mongoosejs.com/docs/models.html
 
-// Create documents, i.e. instances of the above Post model
-// each document in this case will be a post with properties as declared in our schema
-const firstEntry = new Post ({
-  title: "Welcome to my blog!",
-  body: "Hi there. Great to see you stumbled across my blog. I am a self-taught web developer and designer. I started this blog to document my coding journey."
-});
-
-// global array called 'posts' that stores all new individual posts
-let posts = [];
-
-posts.push(firstEntry);
-
-// use the mongoose method insertMany() to save the posts array into our database
-Post.insertMany(posts, function(err){
-  if(err) {
-    console.log(err);
-  } else {
-    console.log("Successfully save items to DB.");
-  }
-});
 
 
 // *** HOME route / root route ***
@@ -82,10 +62,10 @@ app.get("/", function(req, res){
   //    by tapping into the Post model, which represents our items collection
   // using a set of empty curly braces we specify that we want to find all the posts in
   //    our collection (i.e. there are no conditions)
-  Post.find({}, function(err, results){
+  Post.find({}, function(err, posts){
     res.render("home", {
       contentHome: homeStartingContent,
-      newPosts: posts
+      posts: posts
     });
   });
 });
@@ -110,16 +90,33 @@ app.post("/compose", function(req, res){
   // the content of what is submitted with the name newPost is assigned to the variable newPostContent
 
   // JavaScript object containing both the title and the content of a new post
-  const post = {
-    newPostTitle: req.body.newPostTitle,
-    newPostContent: req.body.newPostContent,
-    newPostRoute: _.kebabCase(req.body.newPostTitle)
-  }
+  // this new post document is modelled after the mongoose Post model
+  const post = new Post ({
+    title: req.body.newPostTitle,
+    content: req.body.newPostContent
+  });
+
+  // save document to database instead of pushing it to the posts array like previously
+  // we save each new document (i.e. blog post) in our posts collection
+  post.save(function (err){
+    if(!err) {
+      res.redirect("/");
+    }
+  });
+
+
+  // *** PREVIOUS CODE *** (from before using mongoose)
+  // const post = {
+  //   newPostTitle: req.body.newPostTitle,
+  //   newPostContent: req.body.newPostContent,
+  //   newPostRoute: _.kebabCase(req.body.newPostTitle)
+  // }
 
   // add the new post title and content to the posts array
-  posts.push(post);
+  // posts.push(post);
 
-  res.redirect("/");
+  // *** END OF PREVIOUS CODE ***
+
 });
 
 
@@ -132,27 +129,43 @@ app.post("/compose", function(req, res){
 // https://expressjs.com/en/guide/routing.html > Route Parameters
 app.get("/posts/:postId", function(req, res) {
 
-  const requestedTitle = _.kebabCase(req.params.postId);
-  //const requestedTitle = req.params.postId;
+  const requestedPostId = req.params.postId;
 
-  posts.forEach(function(post) {
+  Post.findOne({_id:requestedPostId}, function(err, post){
 
-    // use lodash to make the actual title of the post kebab-cased for the comparison
-    // kebab case: the-quick-brown-fox-jumps-over-the-lazy-dog"
-    const actualTitle = _.kebabCase(post.newPostTitle);
+    // once a matching post is found, you can render its title and content in the post.ejs page
 
-    // for every title the user might check the code checks whether there's a blog post entry with the same name
-    if (actualTitle === requestedTitle) {
-      console.log("Match found!");
       res.render("post", {
-        // if the if statement is true for any post pass this post's newPostTitle
-        title: post.newPostTitle,
-        content: post.newPostContent
+        title: post.title,
+        content: post.content
       });
-    } else {
-      console.log("Match not found.");
-    }
+
   });
+
+
+  // *** OLD CODE ***
+  // const requestedTitle = _.kebabCase(req.params.postId);
+  //
+  // posts.forEach(function(post) {
+  //
+  //   // use lodash to make the actual title of the post kebab-cased for the comparison
+  //   // kebab case: the-quick-brown-fox-jumps-over-the-lazy-dog"
+  //   const actualTitle = _.kebabCase(post.newPostTitle);
+  //
+  //   // for every title the user might check the code checks whether there's a blog post entry with the same name
+  //   if (actualTitle === requestedTitle) {
+  //     console.log("Match found!");
+  //     res.render("post", {
+  //       // if the if statement is true for any post pass this post's newPostTitle
+  //       title: post.newPostTitle,
+  //       content: post.newPostContent
+  //     });
+  //   } else {
+  //     console.log("Match not found.");
+  //   }
+  // });
+  // *** END OF OLD CODE ***
+
 }); // closing brackets app.get request for posts route
 
 app.listen(3000, function() {
